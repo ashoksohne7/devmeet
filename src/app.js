@@ -2,18 +2,23 @@ const express = require("express");
 
 const app = express();
 
-app.get("/user" ,(req ,res) => {
-    res.send({firstname:"ashok" , lastname:"sohne"});
-});
+app.use(
+    "/user" , 
+    (req,res , next) => {
+    console.log("sending");
+    next();
+    res.send("1 response");
 
-app.post("/user" ,(req , res) => {
     
-    res.send("data saved successfully");
-});
+},
+     
+    (req,res) => {
+        console.log("next is executed")
+        res.send("2 response")
+    }
 
-app.use("/test" , (req,res) => {
-    res.send("Hellow from the me heheheh ashok")
-});
+
+);
 
 
 
