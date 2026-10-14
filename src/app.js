@@ -2,25 +2,27 @@ const express = require("express");
 
 const app = express();
 
-app.use(
-    "/user" , 
-    (req,res , next) => {
-    console.log("sending");
-    next();
-    res.send("1 response");
+const {adminAuth , userAuth}=require("./middleware/auth")
 
-    
-},
-     
-    (req,res) => {
-        console.log("next is executed")
-        res.send("2 response")
-    }
+app.use("/admin", adminAuth);
+app.use("/user", userAuth);
+
+app.get("/user" , userAuth , (req , res) => {
+    res.send("user data send");
+})
 
 
-);
+app.get("/admin/getalldata" , (req , res) => {
+    res.send("all data send");
+})
 
 
+app.get("/admin/deletuser" , (req , res) => {
+
+    // logic of fatching all data
+
+    res.send("all data deleted");
+})
 
 app.listen(7777 , () =>{
     console.log("server is successfully listen on 7777")
