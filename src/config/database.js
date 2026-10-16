@@ -6,11 +6,4 @@ await mongoose.connect(
   );
 };
 
-
-
-connectDb().then(() => {
-    console.log("db connected suuccessfully");
-})
-.catch(err=>{
-    console.log("db not connected", err.message);
-})
+module.exports = connectDb ;
