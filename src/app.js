@@ -17,6 +17,35 @@ app.post("/signup" , async (req,res) => {
    }
 });
 
+//get user by emailId findOne()
+app.use("/user", async (req , res)=> {
+    const userEmail = req.body.emailId;
+
+    try{
+        const user = await User.find({emailId:userEmail});
+        if(user.length === 0) {
+            res.status(400).send("User not found");
+        }else{
+        res.send(user)
+        }
+    }
+    catch(err){
+        res.status(400).send("someting went wrong")
+    }
+});
+
+//FEAD API - GET /FEAD - get all tha user from the database
+app.get("/fead" , async (req,res) => {
+    try{
+        const users =await User.find({});
+        res.send(users)
+    }
+    catch(err){
+        res.status(400).send("someting went wrong");
+    }
+});
+
+
 connectDb()
 .then(() => {
     console.log("db connected suuccessfully");
