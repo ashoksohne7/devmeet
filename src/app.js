@@ -18,7 +18,7 @@ app.post("/signup" , async (req,res) => {
 });
 
 //get user by emailId findOne()
-app.use("/user", async (req , res)=> {
+app.get("/user", async (req , res)=> {
     const userEmail = req.body.emailId;
 
     try{
@@ -45,6 +45,16 @@ app.get("/fead" , async (req,res) => {
     }
 });
 
+//Delete use by id
+app.delete("/user", async (req,res) => {
+        const userId = req.body.userId;
+    try{
+     const user = await User.findByIdAndDelete(userId);
+     res.send("user is deleted")
+    }catch(err){
+       res.status(400).send("someting went wrong");
+    };
+});
 
 connectDb()
 .then(() => {
