@@ -10,20 +10,27 @@ const bcrypt = require("bcrypt");
 app.use(express.json())
 
 app.post("/signup" , async (req,res) => {
-
+try{
  //Validation od data 
  validateSignUpData(req);
  
- const {password} =req.body;
+ const {firstName,lastName,emailId,password} =req.body;
  
  //Encrypt the password
 
- const passwordHash = bcrypt.hash(password,10)
+ const passwordHash = await bcrypt.hash(password,10)
+ console.log(passwordHash);
     
  //creating a instance of model
  
-    const user = new User(req.body);
-   try{
+    const user = new User({
+        firstName,
+        lastName,
+        emailId,
+        password : passwordHash ,
+    });
+
+   
     await user.save();
    res.send("user added successfully")
    }catch(err){
