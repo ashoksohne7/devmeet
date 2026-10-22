@@ -38,6 +38,30 @@ try{
    }
 });
 
+//login Api
+
+app.post("/login" , async (req , res ) => {
+    try{
+
+        const{emailId , password} = req.body ;
+
+        const user = await User.findOne({emailId: emailId});
+        if(!user){
+            throw new Error("EmailId is not present in Database");
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password , user.password);
+        if(isPasswordValid) {
+            res.send("login successfull !")
+        }else{
+            throw new Error("Password is not correct ");
+        }
+    }catch(err){
+       res.status(400).send("Error saving the user :" + err.message)
+    }
+});
+
+
 //get user by emailId findOne()
 app.get("/user", async (req , res)=> {
     const userEmail = req.body.emailId;
