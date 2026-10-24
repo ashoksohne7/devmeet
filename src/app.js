@@ -57,10 +57,14 @@ app.post("/login" , async (req , res ) => {
         if(isPasswordValid) {
             //Create a JWT token
 
-            const token = await jwt.sign({ _id: user._id} ,  "Dev@meet77");
+            const token = await jwt.sign({ _id: user._id} ,  "Dev@meet77",{
+                expiresIn:"7d",
+            });
 
             //Add the token to cookie and send the response back to the use
-            res.cookie("token",token);
+            res.cookie("token",token , { 
+                expires: new Data(Data.now() + 8 * 3600000),
+            });
             res.send("login successfull !")
         }else{
             throw new Error("Password is not correct ");
@@ -81,6 +85,12 @@ try{
 });
 
 //send connection request
+app.post("/sendConnectionRequest", userAuth ,async (req ,res) => {
+    
+    console.log("sending  connectionRequest");
+    res.send("connction request sended!");
+   
+});
 
 
 connectDb()
