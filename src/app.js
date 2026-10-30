@@ -53,17 +53,15 @@ app.post("/login" , async (req , res ) => {
             throw new Error("EmailId is not present in Database");
         }
         
-        const isPasswordValid = await bcrypt.compare(password , user.password);
+        const isPasswordValid = await user.validatePassword(password)
         if(isPasswordValid) {
             //Create a JWT token
 
-            const token = await jwt.sign({ _id: user._id} ,  "Dev@meet77",{
-                expiresIn:"7d",
-            });
+            const token = await user.getJWT()
 
             //Add the token to cookie and send the response back to the use
             res.cookie("token",token , { 
-                expires: new Data(Data.now() + 8 * 3600000),
+                expires: new Date(Date.now() + 8 * 3600000),
             });
             res.send("login successfull !")
         }else{
