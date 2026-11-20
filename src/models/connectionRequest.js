@@ -33,14 +33,12 @@ connectionRequestSchema.pre("save",function(){
     //Check if the from user is same as toUserId
     if(connectionRequest.fromUserId.equals(connectionRequest.toUserId)){
         throw new Error("connot send connection request to your  self !!!");
-    }
-    
+    } 
 });
 
 const ConnectionRequestModel = new mongoose.model(
     "ConnectionRequest",
     connectionRequestSchema
-
 );
 
 module.exports = ConnectionRequestModel ;

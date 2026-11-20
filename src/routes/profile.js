@@ -6,8 +6,9 @@ const {valiDateProfileEditData} = require("../utils/validation");
 
 profileRouter.get("/profile/view", userAuth , async(req,res) => {
 try{
-       const user = req.user;
-       res.send(user);
+    const user = req.user;
+       const { password, ...safeUser } = user.toObject();
+res.send(safeUser);
    }catch(err){
     res.status(400).send("Error saving the user :" + err.message)
 }
@@ -25,10 +26,14 @@ profileRouter.patch("/profile/edit",userAuth , async (req , res ) => {
      Object.keys(req.body).forEach((key) => (logedInUser[key] = req.body[key]));
      await logedInUser.save();
 
+     const { password, ...safeUser } = logedInUser.toObject();
+
      res.json({
-        message : ' ${logedInUser.firstName},your profile Upadated successfuly',
-        data : logedInUser, 
-    });
+       message: `${logedInUser.firstName}, your profile updated successfully`,
+       data: safeUser,
+   });
+
+     
     }catch (err){
         res.status(400).send("ERROR : " + err.message)
     }

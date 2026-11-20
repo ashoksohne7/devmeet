@@ -7,7 +7,6 @@ const User = require("../models/user");
 
 
 requestRouter.post("/request/send/:status/:toUserId", userAuth ,async (req ,res) => {
-
     try{
        const fromUserId = req.user._id;
        const toUserId = req.params.toUserId;
@@ -35,9 +34,7 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth ,async (req ,res)
        if(existingConnectionRequest){
          return res.status(400).send({message:"Connection request already exists !!!"})
        }
-
        //new instance 
-
        const connectionRequest = new ConnectionRequest({
         fromUserId,
         toUserId,
@@ -54,8 +51,6 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth ,async (req ,res)
        res.status(400).send("ERROR :" + err.message);
     }
 }   
-
-
 );
 
 requestRouter.post("/request/review/:status/:requestId", userAuth ,async(req ,res)=>{
