@@ -29,8 +29,8 @@ app.use("/",userRouter);
 connectDb()
 .then(() => {
     console.log("db connected suuccessfully");
-    app.listen(7777 , () =>{
-    console.log("server is successfully listen on 7777")
+    app.listen(process.env.PORT || 7777 , () =>{
+    console.log("server is successfully listen on " + (process.env.PORT || 7777))
 });
 })
 .catch(err=>{
