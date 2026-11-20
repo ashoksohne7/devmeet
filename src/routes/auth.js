@@ -15,7 +15,6 @@ try{
  //Encrypt the password
 
  const passwordHash = await bcrypt.hash(password,10)
- console.log(passwordHash);
     
  //creating a instance of model
  
