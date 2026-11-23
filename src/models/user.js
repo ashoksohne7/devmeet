@@ -9,8 +9,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true ,
         index: true ,
-        minLenght: 2,
-        maxLenght: 18,
+        minLength: 2,
+        maxLength: 18,
     } ,
     lastName : {
         type: String
@@ -61,11 +61,16 @@ const userSchema = new mongoose.Schema({
 
     about : {
         type: String,
-        default: "this is the deafault about of user " ,
+        maxLength: 500,
+    default: "" ,
     } ,
 
     skills : {
-        type: [String] ,
+        type: [String],
+    validate: {
+      validator: (v) => v.length <= 10,
+      message: "You can add up to 10 skills",
+    },
     } ,
   },
 {

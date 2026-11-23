@@ -42,7 +42,7 @@ authRouter.post("/login" , async (req , res ) => {
 
         const user = await User.findOne({emailId: emailId});
         if(!user){
-            throw new Error("EmailId is not present in Database");
+            throw new Error("Invalid email or password");
         }
         
         const isPasswordValid = await user.validatePassword(password)
@@ -54,10 +54,13 @@ authRouter.post("/login" , async (req , res ) => {
             //Add the token to cookie and send the response back to the use
             res.cookie("token",token , { 
                 expires: new Date(Date.now() + 8 * 3600000),
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
             });
             res.send("login successfull !")
         }else{
-            throw new Error("Password is not correct ");
+            throw new Error("Invalid email or password");
         }
     }catch(err){
        res.status(400).send("Error saving the user :" + err.message)
