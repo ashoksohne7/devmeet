@@ -12,8 +12,9 @@ app.use(
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
+app.get("/health", (req, res) => res.send("ok"));
     
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
