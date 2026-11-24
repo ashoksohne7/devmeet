@@ -16,6 +16,37 @@ chatRouter.get("/chat/token", userAuth, (req, res) => {
   res.json({ token });
 });
 
+// last message of every conversation (used to sort the chat list)
+// must be declared before "/chat/:otherId"
+chatRouter.get("/chat/summary", userAuth, async (req, res) => {
+  try {
+    const me = req.user._id;
+    const rows = await Message.aggregate([
+      { $match: { $or: [{ fromUserId: me }, { toUserId: me }] } },
+      { $sort: { createdAt: -1 } },
+      { $group: { _id: "$chatKey", last: { $first: "$$ROOT" } } },
+      { $limit: 200 },
+    ]);
+    const data = rows.map(({ last }) => {
+      const fromMe = String(last.fromUserId) === String(me);
+      return {
+        userId: String(fromMe ? last.toUserId : last.fromUserId),
+        text: String(last.text).slice(0, 80),
+        createdAt: last.createdAt,
+        fromMe,
+      };
+    });
+    const unreadRows = await Message.aggregate([
+      { $match: { toUserId: me, unread: true } },
+      { $group: { _id: "$fromUserId", count: { $sum: 1 } } },
+    ]);
+    const unread = Object.fromEntries(unreadRows.map((r) => [String(r._id), r.count]));
+    res.json({ data, unread });
+  } catch (err) {
+    res.status(500).send("Could not load chats.");
+  }
+});
+
 chatRouter.get("/chat/:otherId", userAuth, async (req, res) => {
   try {
     const { otherId } = req.params;
@@ -37,6 +68,21 @@ chatRouter.get("/chat/:otherId", userAuth, async (req, res) => {
     res.json({ data: rows.reverse().map(serialize), hasMore });
   } catch (err) {
     res.status(500).send("Could not load messages.");
+  }
+});
+
+// mark everything this person sent me as read
+chatRouter.post("/chat/:otherId/read", userAuth, async (req, res) => {
+  try {
+    const { otherId } = req.params;
+    if (!isId(otherId)) return res.status(400).send("Invalid user");
+    await Message.updateMany(
+      { fromUserId: otherId, toUserId: req.user._id, unread: true },
+      { $set: { unread: false } }
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).send("Could not update messages.");
   }
 });
 
