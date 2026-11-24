@@ -56,7 +56,18 @@ const userSchema = new mongoose.Schema({
     } ,
 
     photoUrl : {
-        type: String ,
+        type: String,
+    maxLength: 600000,
+    validate: {
+      validator: (v) =>
+        !v ||
+        v.startsWith("https://") ||
+        v.startsWith("http://") ||
+        ["data:image/jpeg;base64,", "data:image/png;base64,", "data:image/webp;base64,"].some(
+          (p) => v.startsWith(p)
+        ),
+      message: "Photo must be an http(s) URL or an uploaded image",
+    },
     } ,
 
     about : {
