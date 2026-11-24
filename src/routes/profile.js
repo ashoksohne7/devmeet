@@ -1,5 +1,14 @@
 const express = require('express');
 const profileRouter= express.Router();
+
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "yrl4lnm8";
+const CLOUDINARY_PREFIX = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/`;
+const isAllowedPhoto = (u) =>
+  typeof u === "string" &&
+  u.startsWith(CLOUDINARY_PREFIX) &&
+  u.length < 500 &&
+  !u.includes(" ");
+
 const {userAuth} = require("../middleware/auth");
 const {valiDateProfileEditData} = require("../utils/validation");
 
@@ -22,6 +31,13 @@ profileRouter.patch("/profile/edit",userAuth , async (req , res ) => {
     
    }
      const logedInUser = req.user;
+
+      // photos must come from our Cloudinary account (unchanged old values are fine)
+      const newPhoto = req.body.photoUrl;
+      if (newPhoto && newPhoto !== logedInUser.photoUrl && !isAllowedPhoto(newPhoto)) {
+        throw new Error("Please upload your photo using the Upload button");
+      }
+
 
      Object.keys(req.body).forEach((key) => (logedInUser[key] = req.body[key]));
      await logedInUser.save();
