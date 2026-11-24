@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const connectDb = require ("./config/database")
 const app = express();
+const server = require("http").createServer(app);
+require("./socket")(server);
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
@@ -45,17 +47,19 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+const chatRouter = require("./routes/chat");
 
 app.use("/",authRouter);
 app.use("/",profileRouter);
 app.use("/",requestRouter);
 app.use("/",userRouter);
+app.use("/", chatRouter);
 
 
 connectDb()
 .then(() => {
     console.log("db connected suuccessfully");
-    app.listen(process.env.PORT || 7777 , () =>{
+    server.listen(process.env.PORT || 7777 , () =>{
     console.log("server is successfully listen on " + (process.env.PORT || 7777))
 });
 })
