@@ -1,7 +1,8 @@
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const Message = require("./models/message");
-const { isId, chatKey, areConnected, friendIds, serialize } = require("./utils/chat");
+const { isId, chatKey, areConnected, markConnected, friendIds } = require("./utils/chat");
 
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
@@ -16,6 +17,9 @@ module.exports = function initSocket(server) {
   const io = new Server(server, {
     cors: { origin: ALLOWED_ORIGINS },
     maxHttpBufferSize: 5000,
+    // notice dead connections faster and keep proxies from closing idle ones
+    pingInterval: 15000,
+    pingTimeout: 10000,
   });
 
   io.use((socket, next) => {
@@ -45,10 +49,12 @@ module.exports = function initSocket(server) {
     online.set(me, count + 1);
     if (count === 0) notifyFriends(me, true).catch(() => {});
 
+    // the client asks for this on connect, on tab focus and every 30 seconds
     socket.on("presence:get", async (cb) => {
       if (typeof cb !== "function") return;
       try {
         const ids = await friendIds(me);
+        ids.forEach((id) => markConnected(me, id)); // warm the cache for the first message
         cb(ids.filter((id) => online.has(id)));
       } catch {
         cb([]);
@@ -72,6 +78,9 @@ module.exports = function initSocket(server) {
 
         const to = payload?.to;
         const text = typeof payload?.text === "string" ? payload.text.trim() : "";
+        const clientId =
+          typeof payload?.clientId === "string" ? payload.clientId.slice(0, 40) : undefined;
+
         if (!isId(to)) return reply({ ok: false, error: "Invalid recipient." });
         if (!text) return reply({ ok: false, error: "Message cannot be empty." });
         if (text.length > 1000) return reply({ ok: false, error: "Message is too long." });
@@ -79,14 +88,28 @@ module.exports = function initSocket(server) {
           return reply({ ok: false, error: "You can only message your connections." });
         }
 
-        const msg = await Message.create({
-          chatKey: chatKey(me, to),
-          fromUserId: me,
-          toUserId: to,
-          text,
-        });
-        io.to(`user:${to}`).to(`user:${me}`).emit("message:new", serialize(msg));
+        const _id = new mongoose.Types.ObjectId();
+        const createdAt = new Date();
+        const out = { _id: String(_id), fromUserId: me, toUserId: to, text, createdAt, clientId };
+
+        // deliver first, so nobody waits for the database
+        io.to(`user:${to}`).to(`user:${me}`).emit("message:new", out);
         reply({ ok: true });
+
+        // then save; if that fails, take the message back from both sides
+        try {
+          await Message.create({
+            _id,
+            chatKey: chatKey(me, to),
+            fromUserId: me,
+            toUserId: to,
+            text,
+            createdAt,
+          });
+        } catch {
+          io.to(`user:${me}`).emit("message:failed", { _id: out._id, clientId, notice: true });
+          io.to(`user:${to}`).emit("message:failed", { _id: out._id });
+        }
       } catch {
         reply({ ok: false, error: "Message could not be sent." });
       }

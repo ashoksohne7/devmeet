@@ -4,9 +4,13 @@ const isId = (v) => typeof v === "string" && /^[a-f\d]{24}$/i.test(v);
 const chatKey = (a, b) => [String(a), String(b)].sort().join("_");
 
 const cache = new Map();
+const remember = (a, b, ok, ttl) => {
+  cache.set(chatKey(a, b), { ok, exp: Date.now() + ttl });
+  if (cache.size > 5000) cache.clear();
+};
+
 async function areConnected(a, b) {
-  const key = chatKey(a, b);
-  const hit = cache.get(key);
+  const hit = cache.get(chatKey(a, b));
   if (hit && hit.exp > Date.now()) return hit.ok;
 
   const found = await ConnectionRequest.exists({
@@ -17,10 +21,12 @@ async function areConnected(a, b) {
     ],
   });
   const ok = !!found;
-  cache.set(key, { ok, exp: Date.now() + (ok ? 60000 : 5000) });
-  if (cache.size > 5000) cache.clear();
+  remember(a, b, ok, ok ? 60000 : 5000);
   return ok;
 }
+
+// use when the database has already told us two users are connected
+const markConnected = (a, b) => remember(a, b, true, 60000);
 
 async function friendIds(userId) {
   const rows = await ConnectionRequest.find({
@@ -42,4 +48,4 @@ const serialize = (m) => ({
   createdAt: m.createdAt,
 });
 
-module.exports = { isId, chatKey, areConnected, friendIds, serialize };
+module.exports = { isId, chatKey, areConnected, markConnected, friendIds, serialize };
