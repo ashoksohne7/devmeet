@@ -68,3 +68,19 @@ About 45 integration tests (Jest, Supertest and socket.io-client) run against an
 - Login, signup and all other routes are rate limited; security headers come from helmet
 - Request bodies are capped, and profile edits are limited to an allow-list of fields
 - Profile photos must come from the configured Cloudinary account
+
+## Testing
+
+Add a test database URI to your `.env` (use a separate database, never your real one):
+
+```bash
+TEST_MONGO_URI=mongodb://127.0.0.1:27017/devmeet_test
+```
+
+Then run:
+
+```bash
+npm test
+```
+
+46 integration tests (Jest, Supertest and socket.io-client) run against that MongoDB test database. They cover authentication, profile validation, the request and feed flows, chat history and unread counts, and WebSocket authorization. They also run on every push through GitHub Actions, which starts a MongoDB service for the run.
