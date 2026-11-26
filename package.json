@@ -13,7 +13,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "jest --runInBand --forceExit"
+    "test": "jest --runInBand "
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
