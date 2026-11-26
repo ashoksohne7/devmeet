@@ -52,6 +52,14 @@ npm run dev
 
 The server listens on `PORT` or 7777. Set `NODE_ENV=production` in production so the auth cookie is marked `secure`.
 
+## Testing
+
+```bash
+npm test
+```
+
+About 45 integration tests (Jest, Supertest and socket.io-client) run against an in-memory MongoDB, so they never touch a real database. They cover authentication, profile validation, the request and feed flows, chat history and unread counts, and WebSocket authorization. They also run on every push through GitHub Actions.
+
 ## Security notes
 
 - Passwords are hashed with bcrypt and never returned in responses

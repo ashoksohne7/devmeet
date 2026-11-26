@@ -23,6 +23,7 @@ app.use(helmet());
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 30,
+  skip: () => process.env.NODE_ENV === "test",
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many attempts. Please try again in a few minutes.",
@@ -37,6 +38,7 @@ app.get("/health", (req, res) => res.send("ok"));
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000,
   limit: 200,
+  skip: () => process.env.NODE_ENV === "test",
   standardHeaders: true,
   legacyHeaders: false,
   message: "Too many requests. Please slow down.",
@@ -56,7 +58,7 @@ app.use("/",userRouter);
 app.use("/", chatRouter);
 
 
-connectDb()
+if (require.main === module) connectDb()
 .then(() => {
     console.log("db connected suuccessfully");
     server.listen(process.env.PORT || 7777 , () =>{
@@ -66,3 +68,6 @@ connectDb()
 .catch(err=>{
     console.log("db not connected", err.message);
 });
+
+module.exports = app;
+module.exports.server = server;
