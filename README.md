@@ -1,5 +1,7 @@
 # DevMeet API
 
+[![Tests](https://github.com/ashoksohne7/devmeet/actions/workflows/tests.yml/badge.svg)](https://github.com/ashoksohne7/devmeet/actions/workflows/tests.yml)
+
 REST and WebSocket API for DevMeet, a matching app for developers.
 
 **Live API:** https://devmeet-api.onrender.com/health
